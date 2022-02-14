@@ -56,7 +56,7 @@ const Flyer = (props) => {
         storage
     ] = useOutletContext();
 
-    const { flyer, flyers, setFlyers } = props;
+    const { flyer, flyers, setFlyers, handleCommentButtonClick } = props;
 
     // get the flyer's creator's user info
     let flyerCreator = users.find(user => user.info.id === flyer.createdBy);
@@ -177,7 +177,6 @@ const Flyer = (props) => {
                     <div className="flyer-grid-right">
                         <FunctionButtons 
                             post={flyer}
-                            showGoToPost={true}
                         />
                     </div>
                     
@@ -195,8 +194,9 @@ const Flyer = (props) => {
                                 post={flyer}
                                 postIsLiked={flyerIsLiked} 
                                 handleClick={handleClick} />
-                            <PostCommentButton />
-                            <PostShareButton />
+                            <PostCommentButton 
+                                handleCommentButtonClick={handleCommentButtonClick}
+                            />
                         </div>
                     </div>
                     <div className="flyer-grid-right">
@@ -222,7 +222,6 @@ const Flyer = (props) => {
                         <Description description={flyer.description}/>
                     </div>
                     <div>
-                        {/* comment */}
                     </div>
                     <div className="flyer-grid-row">
                         <PostTimeLapsedLong time={flyer.timeCreated} />

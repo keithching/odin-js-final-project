@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, useParams } from 'react-router-dom';
-import Nav from './components/Nav';
+import Master from './components/Master';
 import Home from './components/Home';
 import Profile from './components/Profile';
 import Published from './components/Published';
@@ -16,7 +16,7 @@ const RouteSwitch = () => {
     <div>
       <HashRouter>
         <Routes>
-          <Route path="/" element={<Nav />}>
+          <Route path="/" element={<Master />}>
             <Route index element={<Home />} />
             <Route path="p/:postId/" element={<Post />} />
             <Route path=":username/" element={<Profile />}>
@@ -24,9 +24,9 @@ const RouteSwitch = () => {
               <Route path="saved" element={<Saved />} />
             </Route>
             <Route path="accounts/" element={<Accounts />}>
-              <Route path="login/" element={<Login />} />
+              {/* <Route path="login/" element={<Login />} /> */}
               <Route path="edit/" element={<EditProfile />} />
-              <Route path="password/change/" element={<ChangePassword /> } />
+              {/* <Route path="password/change/" element={<ChangePassword /> } /> */}
             </Route>
             <Route path="*" element={<NotFound />} />
           </Route>

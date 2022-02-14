@@ -106,7 +106,7 @@ const Avatar = (props) => {
 
             // 3 - upload the image to Cloud Storage
             // create a reference for the image
-            const newImageRef = ref(storage, `users/${currentUser.info.username}/avatar/${file.name}`);
+            const newImageRef = ref(storage, `users/${currentUser.info.id}/avatar/${file.name}`);
             
             // Uploads data to this object's location. The upload can be paused and resumed, and exposes progress updates.
             // https://firebase.google.com/docs/reference/js/storage.md#uploadbytesresumable

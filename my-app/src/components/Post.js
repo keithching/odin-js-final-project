@@ -24,7 +24,6 @@ import {
     useParams, 
     useLocation 
 } from 'react-router-dom';
-import { getPostsData, getUsersData } from '../userdata';
 
 import { formatISO } from 'date-fns';
 import uniqid from 'uniqid';
@@ -50,6 +49,8 @@ import {
 
 const Post = (props) => {
 
+    const { id, handleCommentButtonClick, setCardIsClicked } = props;
+
     let [ 
         currentUser,
         setCurrentUser, 
@@ -63,13 +64,13 @@ const Post = (props) => {
         storage
     ] = useOutletContext();
 
-    let { postId } = useParams();
+    let { postId } = useParams(); // access by link
 
     if (!postId) { // access by previewing of card
-        postId = window.history.state.post;
+        if (id) {
+            postId = id;
+        } 
     }
-
-    // extract the user published posts only
 
     // from all available post, find the post owning user
     let postOwner = users.find(user => user.posts.published.find(post => post.id === postId));
@@ -81,24 +82,28 @@ const Post = (props) => {
     // pass as props to like button and like message components
     const [ postIsLiked, setPostIsLiked ] = useState(post.whoLiked.find(each => each.id === currentUser.info.id) ? true : false);
 
-    const handleClick = async () => {
+    const likePost = async () => {
         if (document.getElementById(`postLikeBtn-for-${post.id}`).firstChild.classList.contains('far')) {
             // update DB
             const postRef = doc(db, 'posts', post.firebaseId);
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 whoLiked: arrayUnion({
                     id: currentUser.info.id,
                     time: formatISO(Date.now()).toString()
                 })
             }).then(result => {
-                setPostIsLiked(true);
+                if (postsMountedRef.current) {
+                    setPostIsLiked(true);
+                }
             });
         } else {
             const postRef = doc(db, 'posts', post.firebaseId);
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 whoLiked: post.whoLiked.filter(liker => liker.id !== currentUser.info.id)
             }).then(result => {
-                setPostIsLiked(false);
+                if (postsMountedRef.current) {
+                    setPostIsLiked(false);
+                }
             });
         }
     };
@@ -129,6 +134,7 @@ const Post = (props) => {
         }
     });
 
+    // input field change
     const handleChange = (e) => {
         setComment(prev => {
             return {
@@ -139,14 +145,27 @@ const Post = (props) => {
         });
     };
 
+    // comment submission
     const handleSubmit = async () => {
-        if (replyTarget === 'post') {
+        if (replyTarget === 'post') { // reply to the post
             const postRef = doc(db, 'posts', post.firebaseId);
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 comments: arrayUnion(comment)
-            });        
+            })
+            .then(result => {
+                if (postsMountedRef.current) {
+                    setComment({
+                        id: uniqid(),
+                        createdBy: currentUser.info.id,
+                        timeCreated: formatISO(Date.now()).toString(),
+                        content: '',
+                        whoLiked: [],
+                        repliesToComment: []
+                    });
+                }
+            });      
         }
-        else {
+        else { // reply to a comment of the post
             let commentId = replyTarget;
 
             const postRef = doc(db, 'posts', post.firebaseId);
@@ -162,9 +181,20 @@ const Post = (props) => {
             }
 
             // update the entire document's comments property
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 comments: newComments  
-              });
+            })
+            .then(result => {
+                if (postsMountedRef.current) {
+                    setComment({
+                        id: uniqid(),
+                        createdBy: currentUser.info.id,
+                        timeCreated: formatISO(Date.now()).toString(),
+                        content: '',
+                        whoLiked: [],
+                    });
+                }
+            });
         }
 
         // reset reply target to post
@@ -172,49 +202,61 @@ const Post = (props) => {
     };
 
     useEffect(() => {
+        let mounted = true;
+
         // set a new comment template
         if (replyTarget === 'post') {
-            setComment({
-                id: uniqid(),
-                createdBy: currentUser.info.id,
-                timeCreated: formatISO(Date.now()).toString(),
-                content: '',
-                whoLiked: [],
-                repliesToComment: []
-            });
+            if (mounted) {
+
+            }
         } else {
-            setComment({
-                id: uniqid(),
-                createdBy: currentUser.info.id,
-                timeCreated: formatISO(Date.now()).toString(),
-                content: '',
-                whoLiked: [],
-            });
+            if (mounted) {
+
+            }
         }
+
+        return () => mounted = false;
     }, [posts, replyTarget]); // update comment if a reply is published or reply target changes
 
 
     // save post logic
     const [ isSaved, setIsSaved ] = useState(!!currentUser.posts.saved.find(userSavedPost => userSavedPost.postID === post.id));
 
+
+    const postsMountedRef = useRef(null);
+
+    // ensure the posts state is updated first after the async task. Further state updates can follow afterwards
+    // https://www.debuggr.io/react-update-unmounted-component/
+    useEffect(() => { 
+        postsMountedRef.current = true;
+
+        return () => postsMountedRef.current = false;
+    }, [posts]);
+
+
     // save to the user's object
     const savePost = async () => {
         if (document.getElementById(`postSaveBtn-for-${post.id}`).firstChild.classList.contains('far')) {
             const userRef = doc(db, 'users', currentUser.firebaseId);
-            await updateDoc(userRef, {
+            updateDoc(userRef, {
                 'posts.saved': arrayUnion({
                     postID: post.id,
                     time: formatISO(Date.now()).toString()
                 })
             }).then(result => {
-                setIsSaved(true);
+                if (postsMountedRef.current) {
+                    setIsSaved(true);
+                }
             });
         } else {
             const userRef = doc(db, 'users', currentUser.firebaseId);
-            await updateDoc(userRef, {
+            updateDoc(userRef, {
                 'posts.saved': currentUser.posts.saved.filter(savedPost => savedPost.postID !== post.id)
-                }).then(result => {
-                    setIsSaved(false);
+                })
+                .then(result => {
+                    if (postsMountedRef.current) {
+                        setIsSaved(false);
+                    }     
                 });
         }
     };
@@ -244,7 +286,10 @@ const Post = (props) => {
                                 </div>
                             </div>
                             <div className="post-grid-right">
-                                <FunctionButtons post={post} />
+                                <FunctionButtons 
+                                    post={post}
+                                    setCardIsClicked={setCardIsClicked}
+                                />
                             </div>
                         </div>
                     </div>
@@ -275,7 +320,6 @@ const Post = (props) => {
 
                             let commentCreator = users.find(user => user.info.id === comment.createdBy);
 
-                            // make it a Comment component
                             // pass the comment properties and methods as props to each individual component
                             // then use states in each of the component so the reply and like functionalities can be implemented within
 
@@ -303,10 +347,11 @@ const Post = (props) => {
                                         <PostLikeButton 
                                             post={post} 
                                             postIsLiked={postIsLiked} 
-                                            handleClick={handleClick} 
+                                            likePost={likePost} 
                                         />
-                                        <PostCommentButton />
-                                        <PostShareButton />
+                                        <PostCommentButton 
+                                            handleCommentButtonClick={handleCommentButtonClick}
+                                        />
                                     </div>
                                 </div>
                                 <div className="post-grid-right">
@@ -325,7 +370,7 @@ const Post = (props) => {
                                         <div className="post-grid-row">
                                             <PostLikedBy 
                                                 likedBy={post.whoLiked}
-                                                handleClick={handleClick} 
+                                                likePost={likePost} 
                                             />
                                         </div>
                                         <div className="post-grid-row">

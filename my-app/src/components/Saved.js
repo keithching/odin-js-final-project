@@ -1,5 +1,6 @@
 import { useOutletContext } from 'react-router';
-import Card from './Card';
+import { useState, useEffect, useRef } from 'react';
+import Cards from './Cards';
 
 const Saved = () => {
     
@@ -12,38 +13,36 @@ const Saved = () => {
         setPosts,
         getPublishedPosts,
         getFollowingPosts,
+        db,
+        storage,
         handleMouseOver, 
         handleMouseOut, 
-        handleClick,
-        resetHover
+        resetHover,
+        pageOwner
     ] = useOutletContext();
 
-    let currentUserSavedPostsId = currentUser.posts.saved.map(post => post.postID);
+    const getCurrentUserSavedPosts = () => {
+        let currentUserSavedPostsId = currentUser.posts.saved.map(post => post.postID);
+        let currentUserSavedPosts = posts.filter(post => currentUserSavedPostsId.find(postId => postId === post.id)); 
+            
+        return currentUserSavedPosts;
+    };
+    
+    const [ savedPosts, setSavedPosts ] = useState(getCurrentUserSavedPosts());
 
-    // let allPosts = posts.published.concat(posts.following);
+    useEffect(() => {
+            setSavedPosts(getCurrentUserSavedPosts());
+    }, [posts]);
 
-    let currentUserSavedPosts = posts.filter(post => currentUserSavedPostsId.find(postId => postId === post.id)); 
 
     return (
-        <div className="card-container">
-            {currentUserSavedPosts.map(post => {
-                return (
-                    <div key={post.id}>
-                        <div id={post.id}>
-                            <Card 
-                                handleMouseOver={handleMouseOver}
-                                handleMouseOut={handleMouseOut}
-                                handleClick={handleClick}
-                                photoPreview={post.photos}
-                                isHovered={post.isHovered}
-                                post={post}
-                                resetHover={resetHover}
-                            />
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
+        <Cards 
+            postsToDisplay={savedPosts}
+            handleMouseOver={handleMouseOver}
+            handleMouseOut={handleMouseOut}
+            resetHover={resetHover}
+            getPublishedPosts={getPublishedPosts}
+        />
     );
 }
 

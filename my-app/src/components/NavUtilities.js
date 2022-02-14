@@ -19,6 +19,7 @@ const NavUtilities = (props) => {
 
     const closePopover = () => {
         setToggleDropdownMenu(false);
+        document.getElementById('nav-dropdown-avatar').classList.remove('click');
     }
 
     const signOutUserThenClosePopover = async () => {

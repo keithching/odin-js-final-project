@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import { showToastMessage } from '../helper';
+
 import { 
     getFirestore,
     collection,
@@ -30,7 +32,6 @@ import {
 } from 'firebase/storage';
 
 const FunctionButtons = (props) => {
-    
     let [ 
         currentUser, 
         setCurrentUser, 
@@ -44,10 +45,19 @@ const FunctionButtons = (props) => {
         storage
     ] = useOutletContext();
 
-    const { post, showGoToPost } = props;
-
+    const { post, setCardIsClicked } = props;
     const [ menuIsClicked, setMenuIsClicked ] = useState(false);
     const [ deleteBtnIsClicked, setDeleteBtnIsClicked ] = useState(false);
+
+    // show if the current location isn't the post
+    // or if modal exists in DOM
+    const isLocationAtPostUrl = () => {
+        if (!window.location.href.includes(post.id) || !!document.getElementById(`modal-for-post-${post.id}`)) {
+            return false;
+        } else {
+            return true;
+        }
+    };
 
     const callMenu = () => {
         if (!menuIsClicked) {
@@ -124,11 +134,11 @@ const FunctionButtons = (props) => {
         div.classList.add('post-menu-menu');
 
         const subdiv1 = createDeleteFunction();
-        const subdiv2 = createGoToPostFunction();
         const subdiv3 = createCancelFunction();
 
         div.appendChild(subdiv1);
-        if (showGoToPost) {
+        if (!isLocationAtPostUrl()) {
+            const subdiv2 = createGoToPostFunction();
             div.appendChild(subdiv2);
         }
         div.appendChild(subdiv3);
@@ -155,17 +165,28 @@ const FunctionButtons = (props) => {
                     if (location.pathname === '/') { // index page
                         // do nth
                     } else {
+
+                        // close the modal if exists
+                        let modal = document.querySelector('.modal');
+                        if (modal) {
+                            setCardIsClicked(false);
+                        }
+                        
+                        clearMenuFromDOM();
                         navigate(`/${currentUser.info.username}/`); // navigate back to current user's page
                     }
                     
                     deletePost() // delete post
                     .then((res) => {
-                        clearMenuFromDOM();
+                        showToastMessage('Post deleted successfully.');
+                    })
+                    .catch(err => {
+                        showToastMessage(`Error trying to delete the post: ${err.message}`);
                     });
                 }
             });
         } else { // the post does not belong to current user. no delete functionality
-            div.textContent = 'TODO';
+            div.textContent = 'Hello';
             div.id = 'post-delete-btn';
         }
         return div;
@@ -173,7 +194,7 @@ const FunctionButtons = (props) => {
 
     const createGoToPostFunction = () => {
         let div;
-        if (showGoToPost) {
+        if (!isLocationAtPostUrl()) {
             div = document.createElement('div');
             div.classList.add('post-menu-item');
             div.textContent = 'Go To Post';
@@ -231,7 +252,7 @@ const FunctionButtons = (props) => {
         const postRef = doc(db, 'posts', post.firebaseId);
         await deleteDoc(postRef)
             .then(() => {
-                console.log('post removed from Firestore!');
+                // console.log('post removed from Firestore!');
             })
             .catch(error => {
                 console.log('sth went wrong while trying to delete post...');
@@ -243,7 +264,7 @@ const FunctionButtons = (props) => {
             'posts.published': currentUser.posts.published.filter(publishedPost => publishedPost.id !== post.id)
         })
             .then(() => {
-                console.log('user updated in Firestore');
+                // console.log('user updated in Firestore');
             })
             .catch(error => {
                 console.log('sth went wrong while trying to update user...');
@@ -254,7 +275,7 @@ const FunctionButtons = (props) => {
 
         await deleteObject(photoRef)
             .then(() => {
-                console.log('post photo deleted!');
+                // console.log('post photo deleted!');
             })
             .catch(error => {
                 console.log('sth went wrong while trying to delete post photos...');

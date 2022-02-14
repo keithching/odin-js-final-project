@@ -6,7 +6,7 @@ import CommentLikedBy from './CommentLikedBy';
 import CommentReplyButton from './CommentReplyButton';
 import CommentLikeButton from './CommentLikeButton';
 import { useOutletContext } from 'react-router';
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { formatISO } from 'date-fns';
 
 import { 
@@ -52,6 +52,13 @@ const ReplyToComment = (props) => {
     // like reply to comment implementation
     // whether current user has like this reply to comment
     const [ replyToCommentIsLiked, setReplyToCommentIsLiked ] = useState(replyToComment.whoLiked.find(each => each.id === currentUser.info.id));
+    
+    const postsMountedRef = useRef(null);
+    useEffect(() => { 
+        postsMountedRef.current = true;
+
+        return () => postsMountedRef.current = false;
+    }, [posts]);
 
     const likeReplyToComment = async () => {
         
@@ -74,10 +81,12 @@ const ReplyToComment = (props) => {
                 }
             }
 
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 comments: newComments
             }).then(result => {
-                setReplyToCommentIsLiked(true);
+                if (postsMountedRef.current) {
+                    setReplyToCommentIsLiked(true);
+                }
             });
 
         } else { // if reply to comment has been liked by current user
@@ -93,10 +102,12 @@ const ReplyToComment = (props) => {
                 }
             }
 
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
                 comments: newComments
             }).then(result => {
-                setReplyToCommentIsLiked(false);
+                if (postsMountedRef.current) {
+                    setReplyToCommentIsLiked(false);
+                }
             });
         }
     };

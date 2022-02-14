@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { useOutletContext } from 'react-router';
 import { NavLink, Outlet } from 'react-router-dom';
+
 import Avatar from './Avatar';
-import { useState } from 'react';
+import ChangeProfilePhoto from './ChangeProfilePhoto';
+import { showToastMessage } from '../helper';
+
 import { 
     getFirestore,
     collection,
@@ -20,7 +24,6 @@ import {
     arrayUnion,
     arrayRemove
 } from 'firebase/firestore';
-import ChangeProfilePhoto from './ChangeProfilePhoto';
 
 const EditProfile = () => {
 
@@ -47,20 +50,6 @@ const EditProfile = () => {
     const [ nicknameInput, setNicknameInput ] = useState(currentUser.info.nickname);
     const [ usernameInput, setUsernameInput ] = useState(currentUser.info.username);
 
-    const showToastMessage = (message) => {
-        const toast = document.createElement('div');
-        toast.classList.add('edit-account-toast-message');
-        toast.textContent = message;
-
-        const container = document.querySelector('.edit-account-container');
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            const toastDiv = document.querySelector('.edit-account-toast-message');
-            toastDiv.remove();
-        }, 2000);
-    };
-    
     const showError = () => {
         let nicknameInputField = document.getElementById('editAccountNicknameInput');
         let usernameInputField = document.getElementById('editAccountUsernameInput');
@@ -99,6 +88,7 @@ const EditProfile = () => {
                 }
             }
         }
+
     };
 
 
@@ -124,10 +114,13 @@ const EditProfile = () => {
         let nicknameInputField = document.getElementById('editAccountNicknameInput');
         let usernameInputField = document.getElementById('editAccountUsernameInput');
 
-        if (nicknameInputField.validity.valid && usernameInputField.validity.valid) {
+        if (usernameInputField.value.includes(' ')) { // restrict space in username
+            showToastMessage('spaces not allowed in username. Try again :)');
+        }
+        else if (nicknameInputField.validity.valid && usernameInputField.validity.valid) {
             const currentUserRef = doc(db, 'users', currentUser.firebaseId);
         
-            await updateDoc(currentUserRef, {
+            updateDoc(currentUserRef, {
                 "info.username": usernameInputField.value,
                 "info.nickname": nicknameInputField.value
             })
@@ -156,6 +149,7 @@ const EditProfile = () => {
                                 db={db}
                                 storage={storage}
                                 clickable={true}
+                                pageOwner={currentUser}
                             />
                         </div>
                         <div className="edit-account-right-row-right">

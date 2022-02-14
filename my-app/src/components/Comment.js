@@ -7,7 +7,7 @@ import CommentReplyButton from './CommentReplyButton';
 import CommentLikeButton from './CommentLikeButton';
 import ReplyToComment from './ReplyToComment';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router';
 import { formatISO } from 'date-fns';
 import uniqid from 'uniqid';
@@ -56,6 +56,14 @@ const Comment = (props) => {
     // whether current user has like this comment
     const [ commentIsLiked, setCommentIsLiked ] = useState(comment.whoLiked.find(each => each.id === currentUser.info.id));
 
+    const postsMountedRef = useRef(null);
+    useEffect(() => { 
+        postsMountedRef.current = true;
+
+        return () => postsMountedRef.current = false;
+    }, [posts]);
+
+
     const likeComment = async () => {
         // update DB
         // find the post
@@ -77,10 +85,12 @@ const Comment = (props) => {
             }
 
             // update the entire document's comments property
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
               comments: newComments  
             }).then(result => {
-                setCommentIsLiked(true);
+                if (postsMountedRef.current) {
+                    setCommentIsLiked(true);
+                }
             });
 
 
@@ -96,10 +106,12 @@ const Comment = (props) => {
             }
 
             // update the entire document's comments property
-            await updateDoc(postRef, {
+            updateDoc(postRef, {
               comments: newComments  
             }).then(result => {
-                setCommentIsLiked(false);
+                if (postsMountedRef.current) {
+                    setCommentIsLiked(false);
+                }
             });
         }
     };

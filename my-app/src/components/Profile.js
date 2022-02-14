@@ -1,4 +1,8 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useOutletContext } from 'react-router';
 import { Outlet, NavLink } from 'react-router-dom';
+
 import Avatar from './Avatar';
 import Username from './Username';
 import EditProfileButton from './EditProfileButton';
@@ -6,12 +10,8 @@ import PublishedPosts from './PublishedPosts';
 import NumberOfFollowers from './NumberOfFollowers';
 import NumberOfFollowing from './NumberOfFollowing';
 import Nickname from './Nickname';
-import { getUserData, getPostData } from '../userdata';
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useOutletContext } from 'react-router';
 import FollowThisPageOwner from './FollowThisPageOwner';
-
+import Footer from './Footer';
 
 const Profile = () => {
 
@@ -29,8 +29,12 @@ const Profile = () => {
     ] = useOutletContext();
 
     let { username } = useParams(); // get the params from the url
+    
+    const [ pageOwner, setPageOwner ] = useState(users.find(user => user.info.username === username));
 
-    let pageOwner = users.find(user => user.info.username === username);
+    useEffect(() => {
+        setPageOwner(users.find(user => user.info.username === username));
+    }, [username]);
 
     const resetHover = () => {
         setPosts(prev => {
@@ -86,10 +90,12 @@ const Profile = () => {
                 </div>
                 <div className="header-right">
                     <div className="header-row">
-                        <Username className="header-username" username={pageOwner.info.username}/>
+                        <div className="header-username">{pageOwner.info.username}</div>
                         {username === currentUser.info.username ? 
                             <EditProfileButton className="header-edit-profile-button"/> :
-                            <FollowThisPageOwner pageOwner={pageOwner} />
+                            <FollowThisPageOwner 
+                                pageOwner={pageOwner}
+                            />
                         }
                     </div>
                     <div className="header-row">
@@ -110,12 +116,16 @@ const Profile = () => {
                 >
                     POSTS
                 </NavLink>
-                <NavLink
-                    to="saved"
-                    className={({ isActive }) => isActive ? 'profile-nav-active' : 'profile-nav-inactive' }
-                >
-                    SAVED
-                </NavLink>
+                { pageOwner.info.id === currentUser.info.id ?
+                    <NavLink
+                        to="saved"
+                        className={({ isActive }) => isActive ? 'profile-nav-active' : 'profile-nav-inactive' }
+                    >
+                        SAVED
+                    </NavLink>
+                    :
+                    null
+                }
             </div>
 
             <div className="profile-main-container">
@@ -133,10 +143,13 @@ const Profile = () => {
                             storage,
                             handleMouseOver, 
                             handleMouseOut, 
-                            resetHover
+                            resetHover,
+                            pageOwner
                         ]
                     }/>    
             </div>
+
+            <Footer />
 
         </div>
     );

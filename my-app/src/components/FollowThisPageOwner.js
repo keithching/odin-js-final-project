@@ -36,8 +36,16 @@ const FollowThisPageOwner = (props) => {
 
     const { pageOwner } = props;
 
+    const getFollowingStatus = () => {
+        return !!pageOwner.followers.find(each => each.userID === currentUser.info.id);
+    }
+
    // follow and unfollow
-   const [ hasFollowed, setHasFollowed ] = useState(!!currentUser.following.find(each => each.userID === pageOwner.info.id));
+   const [ hasFollowed, setHasFollowed ] = useState(false);
+
+    useEffect(() => {
+        setHasFollowed(getFollowingStatus());
+    }, [pageOwner]);
 
    const unfollow = () => {
        setHasFollowed(false);
@@ -64,19 +72,21 @@ const FollowThisPageOwner = (props) => {
                     followers: pageOwner.followers.filter(each => each.userID !== currentUser.info.id)
                });
            } else { // follow
-                await updateDoc(currentUserRef, {
-                    following: arrayUnion({
-                        userID: pageOwner.info.id,
-                        time: formatISO(Date.now()).toString()
-                    })
-                });
- 
-                await updateDoc(pageOwnerRef, {
-                     followers: arrayUnion({
-                        userID: currentUser.info.id,
-                        time: formatISO(Date.now()).toString()
-                     })
-                });
+                if (!pageOwner.followers.find(each => each.userID === currentUser.info.id)) {
+                    await updateDoc(currentUserRef, {
+                        following: arrayUnion({
+                            userID: pageOwner.info.id,
+                            time: formatISO(Date.now()).toString()
+                        })
+                    });
+     
+                    await updateDoc(pageOwnerRef, {
+                         followers: arrayUnion({
+                            userID: currentUser.info.id,
+                            time: formatISO(Date.now()).toString()
+                         })
+                    });
+                }
            }
        }
    }, [hasFollowed]);
@@ -87,7 +97,8 @@ const FollowThisPageOwner = (props) => {
                 <button onClick={unfollow} className="profile-followed-btn">
                     <i className="fas fa-user"></i>
                     <i className="fas fa-check"></i>
-                </button> : 
+                </button> 
+                : 
                 <button onClick={follow} className="profile-to-follow-btn">
                     Follow
                 </button>
