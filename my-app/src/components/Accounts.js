@@ -38,16 +38,6 @@ const Accounts = () => {
                         >
                             Edit Profile
                         </NavLink>
-                        {/* <NavLink
-                            style={({ isActive }) => {
-                                return {
-                                    fontWeight: isActive ? 'bold' : 'normal',
-                                };
-                            }}
-                            to="/accounts/password/change/"
-                        >
-                            Change Password
-                        </NavLink> */}
                     </div>
                     <div className="edit-account-left-bottom">
                         <div className="brand">

@@ -200,7 +200,12 @@ const FunctionButtons = (props) => {
             div.textContent = 'Go To Post';
             div.id = 'flyer-go-to-post-btn';
             div.addEventListener('click', () => {
-                navigate(`/p/${post.id}`);
+                let modal = document.querySelector('.modal');
+                if (modal) {
+                    window.history.go(0);  // go to the currrent point in history
+                } else {
+                    navigate(`/p/${post.id}`);
+                }
             });
 
             return div;

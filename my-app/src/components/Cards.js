@@ -9,7 +9,8 @@ const Cards = (props) => {
         handleMouseOver,
         handleMouseOut,
         resetHover,
-        getPublishedPosts
+        getPublishedPosts,
+        currentUser
      } = props;
 
     // if the card is clicked, toggle the modal for the target post
@@ -30,6 +31,10 @@ const Cards = (props) => {
             setCardIsClicked(false);
             setTargetPostId('');
             document.body.classList.remove('stop-scrolling');
+
+            // history push state back to index url
+            window.history.pushState({}, 'test title', `/#/${currentUser.info.username}/`);
+            // window.history.back();
         }
     };
 
@@ -39,7 +44,8 @@ const Cards = (props) => {
         document.body.classList.remove('stop-scrolling');
 
         // history push state back to index url
-        window.history.pushState({}, 'test title', `/#/`);
+        window.history.pushState({}, 'test title', `/#/${currentUser.info.username}/`);
+        // window.history.back();
     };
 
     // escape key close modal support

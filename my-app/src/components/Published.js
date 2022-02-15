@@ -57,6 +57,7 @@ const Published = () => {
             handleMouseOut={handleMouseOut}
             resetHover={resetHover}
             getPublishedPosts={getPublishedPosts}
+            currentUser={currentUser}
         />
     );
 }

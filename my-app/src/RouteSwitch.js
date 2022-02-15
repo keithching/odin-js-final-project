@@ -24,9 +24,7 @@ const RouteSwitch = () => {
               <Route path="saved" element={<Saved />} />
             </Route>
             <Route path="accounts/" element={<Accounts />}>
-              {/* <Route path="login/" element={<Login />} /> */}
               <Route path="edit/" element={<EditProfile />} />
-              {/* <Route path="password/change/" element={<ChangePassword /> } /> */}
             </Route>
             <Route path="*" element={<NotFound />} />
           </Route>

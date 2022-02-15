@@ -42,6 +42,7 @@ const Saved = () => {
             handleMouseOut={handleMouseOut}
             resetHover={resetHover}
             getPublishedPosts={getPublishedPosts}
+            currentUser={currentUser}
         />
     );
 }
