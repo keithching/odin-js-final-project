@@ -33,8 +33,7 @@ const Cards = (props) => {
             document.body.classList.remove('stop-scrolling');
 
             // history push state back to index url
-            window.history.pushState({}, 'test title', `/#/${currentUser.info.username}/`);
-            // window.history.back();
+            window.history.pushState({}, 'test title', `#/${currentUser.info.username}/`);
         }
     };
 
@@ -44,8 +43,7 @@ const Cards = (props) => {
         document.body.classList.remove('stop-scrolling');
 
         // history push state back to index url
-        window.history.pushState({}, 'test title', `/#/${currentUser.info.username}/`);
-        // window.history.back();
+        window.history.pushState({}, 'test title', `#/${currentUser.info.username}/`);
     };
 
     // escape key close modal support
@@ -71,7 +69,7 @@ const Cards = (props) => {
         } else {
             if (targetPostId !== '') {
                 // history push state to the post Id url
-                window.history.pushState({post: `${targetPostId}`}, 'test title', `/#/p/${targetPostId}`);
+                window.history.pushState({post: `${targetPostId}`}, 'test title', `#/p/${targetPostId}`);
 
                 // set the card is clicked to true
                 if (!cardIsClicked) {
