@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/odin-js-final-project/static/css/main.93b8a5c0.css",
-    "main.js": "/odin-js-final-project/static/js/main.9f7227d8.js",
+    "main.js": "/odin-js-final-project/static/js/main.6660c437.js",
     "index.html": "/odin-js-final-project/index.html",
     "main.93b8a5c0.css.map": "/odin-js-final-project/static/css/main.93b8a5c0.css.map",
-    "main.9f7227d8.js.map": "/odin-js-final-project/static/js/main.9f7227d8.js.map"
+    "main.6660c437.js.map": "/odin-js-final-project/static/js/main.6660c437.js.map"
   },
   "entrypoints": [
     "static/css/main.93b8a5c0.css",
-    "static/js/main.9f7227d8.js"
+    "static/js/main.6660c437.js"
   ]
 }
