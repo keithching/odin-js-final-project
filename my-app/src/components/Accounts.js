@@ -18,7 +18,7 @@ const Accounts = () => {
         storage,
         signIn,
         signOutUser,
-        username,
+        displayName,
         profilePicUrl,
         isSignedIn
     ] = useOutletContext();
@@ -68,7 +68,7 @@ const Accounts = () => {
                         storage,
                         signIn,
                         signOutUser,
-                        username,
+                        displayName,
                         profilePicUrl,
                         isSignedIn
                     ]

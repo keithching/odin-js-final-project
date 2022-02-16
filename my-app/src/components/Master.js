@@ -60,24 +60,90 @@ const Master = () => {
     const db = getFirestore(app); // get database from firebase
     const storage = getStorage(app); // Get a reference to the storage service
 
-    // auth observer
-    useEffect(() => {
-        onAuthStateChanged(getAuth(), authStateObserver);
-    }, []);
-
-    const [ uid, setUid ] = useState(''); // unique firebase Id
-    const [ username, setUsername ] = useState('');
+    // unique firebase Id
+    const [ uid, setUid ] = useState(''); 
+    // from google user
+    const [ displayName, setDisplayName ] = useState('');
     const [ profilePicUrl, setProfilePicUrl ] = useState('');
+    const [ email, setEmail ] = useState('');
+
+    
+    const [ signUpIsClicked, setSignUpIsClicked ] = useState(false);
+    const [ toggleSignUp, setToggleSignUp ] = useState(false);
     const [ isSignedIn, setIsSignedIn ] = useState(isUserSignedIn());
 
+    const handleSignUpClick = () => { // set click status to true if clicked
+        setSignUpIsClicked(true);
+    };
+
+    useEffect(async () => {
+        if (signUpIsClicked) {
+            await signIn(); // signs in the user
+            checkUser(); // check user after sign in complete
+        }
+    }, [signUpIsClicked]);
+
+    useEffect(() => {
+        if (isSignedIn) {
+            setSignUpIsClicked(false); // reset button click status if signed in
+        }
+    }, [isSignedIn]);
+
+
+    // get all data first. treat as global data for the current user
+    const [ users, setUsers ] = useState([]);
+    const [ currentUser, setCurrentUser ] = useState(null);
+    const [ posts, setPosts ] = useState([]);
+    
+    const auth = getAuth();
+
+    // fire the auth observer when page loaded
+    useEffect(() => {
+        onAuthStateChanged(auth, authStateObserver);
+    }, []);
+
+    // check whether the user is registered
+    const isUserRegistered = (uidFromUser) => {
+        const uidsFromServer = users.map(userFromDB => userFromDB.info.id);
+        if (uidsFromServer.find(uidFromServer => uidFromServer === uidFromUser)) {
+            return true;
+        } else { // not a registered user 
+            return false;
+        }
+    };
+
     const authStateObserver = async (user) => {
-        if (user) { // user is logged in
+        if (user) { // user is logged in        
             setUid(user.uid);
-            setUsername(getUserName());
+            setDisplayName(getUserName());
             setProfilePicUrl(getProfilePicUrl());
+            setEmail(user.email);
         }
         else { // user not log in
             setIsSignedIn(false);
+        }
+    };
+
+    // check the user registration status
+    const checkUser = () => {
+        if (auth.currentUser) {
+            let uidFromUser = auth.currentUser.uid;
+            let isRegistered = isUserRegistered(uidFromUser);
+
+            if (isRegistered) { // is a registered user. signs him in 
+                setCurrentUser(users.find(userFromDB => userFromDB.info.id === uidFromUser));
+                setIsSignedIn(true);
+            } 
+            else if (signUpIsClicked) { // not a registered user. pop up sign up form
+                setIsSignedIn(false); 
+                setToggleSignUp(true);
+            } 
+            else { // clean up
+                signOutUser();
+            }
+        } 
+        else { // clean up
+            signOutUser();
         }
     };
 
@@ -100,7 +166,9 @@ const Master = () => {
         // Sign in Firebase using popup auth and Google as the identity provider.
         var provider = new GoogleAuthProvider();
         const auth = getAuth();
-        await signInWithRedirect(auth, provider);
+        // await signInWithRedirect(auth, provider);
+
+        await signInWithPopup(auth, provider);
     };
 
     // Signs-out
@@ -148,16 +216,10 @@ const Master = () => {
         }
     }
 
-    // get all data first. treat as global data for the current user
-    const [ users, setUsers ] = useState([]);
-    const [ currentUser, setCurrentUser ] = useState(null);
-    const [ posts, setPosts ] = useState([]);
-    
-
-    // get users data once from DB
+    // get users data once from DB for app preparation
     const [ usersDataGot, setUsersDataGot ] = useState(false);
     useEffect(async () => {
-        if (!usersDataGot.current) {
+        if (!usersDataGot) {
             const querySnapshot = await getDocs(collection(db, 'users'));
             querySnapshot.forEach(doc => {
                 let user = doc.data();
@@ -165,14 +227,12 @@ const Master = () => {
                 setUsers(prevUsers => prevUsers.concat(user));
             });
 
-            // usersDataGot.current = true; 
-            setUsersDataGot(true);
-            // set true after all data has been loaded
+            setUsersDataGot(true); // set true after all data has been loaded
             activateUserListener();
         }
     }, []);
 
-    // listener for changes 
+    // listener for changes when app is running
     const activateUserListener = () => {
         const usersQuery = query(collection(db, 'users'));
 
@@ -218,10 +278,10 @@ const Master = () => {
         });
     };
 
-    // get posts data once from DB
+    // get posts data once from DB for app preparation
     const [ postsDataGot, setPostsDataGot ] = useState(false);
     useEffect(async () => {
-        if (!postsDataGot.current) {
+        if (!postsDataGot) {
             const querySnapshot = await getDocs(collection(db, 'posts'));
             querySnapshot.forEach(doc => {
                 let post = doc.data();
@@ -237,7 +297,7 @@ const Master = () => {
 
     }, []);
 
-    // listener for change
+    // listener for change when app is running
     const activatePostListener = () => {
         // listening to data query change
         const postsQuery = query(collection(db, 'posts'));
@@ -285,25 +345,14 @@ const Master = () => {
     // initialize the app
     const [ appDataGot, setAppDataGot ] = useState(false);
     useEffect(async () => {
-        if (!appDataGot) {
-            if (usersDataGot && postsDataGot) { // if both data got
-                if (isUserSignedIn) {
-                    // uid is set , but check whether the user is registered
-                    const uidsFromServer = users.map(userFromDB => userFromDB.info.id);
-                    if (uidsFromServer.find(uidFromServer => uidFromServer === uid)) {
-                        // set current user
-                        // so the app gets its data
-                        setCurrentUser(users.find(userFromDB => userFromDB.info.id === uid));
-                        setIsSignedIn(true);
-                    } else {
-                        setIsSignedIn(false); // not a registered user 
-                    }
-                }
+            if (!appDataGot) {
+                if (usersDataGot && postsDataGot) { // if both data got
+                    checkUser(); // check user's registration status
+                    setAppDataGot(true);
+                } 
+            }
+    }, [usersDataGot, postsDataGot, appDataGot]);
 
-                setAppDataGot(true);
-            } 
-        }
-    }, [posts, users, currentUser, uid, usersDataGot, postsDataGot]);
 
     const getFollowingPosts = () => {
         let following = posts.filter(each => currentUser.following.find(following => following.userID === each.createdBy));
@@ -340,10 +389,13 @@ const Master = () => {
                 <LoginPage 
                     signIn={signIn}
                     users={users}
-                    getAuth={getAuth}
-                    getRedirectResult={getRedirectResult}
-                    GoogleAuthProvider={GoogleAuthProvider}
                     saveUser={saveUser}
+                    email={email}
+                    uid={uid}
+                    displayName={displayName}
+                    profilePicUrl={profilePicUrl}
+                    toggleSignUp={toggleSignUp}
+                    handleSignUpClick={handleSignUpClick}
                 />
             :
             <div className="master-container">
@@ -405,7 +457,7 @@ const Master = () => {
                                 storage,
                                 signIn,
                                 signOutUser,
-                                username,
+                                displayName,
                                 profilePicUrl,
                                 isSignedIn
                             ]

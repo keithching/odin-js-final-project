@@ -27,8 +27,8 @@ body {
 }
 
 body {
-    overflow-x: hidden; /* hide x direction scrollbar */
-    /* overflow-y: hidden; */
+    overflow-x: hidden; 
+    /* hide x direction scrollbar */
 }
 
 .brand {
@@ -137,9 +137,9 @@ body {
     border-color: rgba(0,0,0,0.5);
 }
 
-/* .sign-up-form input.invalid {
+.sign-up-form input.invalid {
     border-color: red;
-} */
+}
 
 .sign-up-form-input-field {
     display: flex;
@@ -346,6 +346,9 @@ body {
 }
 
 #nav-dropdown-avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-style: solid;
     border-color: transparent;
     width: 30px;
@@ -355,6 +358,8 @@ body {
     border-radius: 50%;
     border-width: 0.5px;
     cursor: pointer;
+    font-size: 25px;
+    color: rgba(0,0,0,0.3);
 }
 
 #nav-dropdown-avatar.click {
@@ -492,6 +497,11 @@ body {
     justify-content: center;
     align-items: center;
     gap: 20px;
+}
+
+/* https://stackoverflow.com/questions/21983508/strange-underlines-in-font-awesome-css */
+.home-user-profile a {
+    text-decoration: none;
 }
 
 .home-user-profile-right {

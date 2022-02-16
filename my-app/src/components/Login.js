@@ -14,7 +14,7 @@ const Login = () => {
         storage,
         signIn,
         signOutUser,
-        username,
+        displayName,
         profilePicUrl,
         isSignedIn
     ] = useOutletContext();
@@ -23,7 +23,7 @@ const Login = () => {
         <div>
             { isSignedIn ? 
                 <div>
-                    <div id="login-username">{username} </div>
+                    <div id="login-display-name">{displayName} </div>
                     <img src={profilePicUrl} />
                     <button onClick={signOutUser}>Log out</button>
                 </div>

@@ -112,11 +112,16 @@ const NavUtilities = (props) => {
                 <div 
                     className="nav-dropdown" 
                 >
-                    <img 
-                        src={currentUser.info.avatar}
+                    <div 
                         id="nav-dropdown-avatar"
                         onClick={toggleDropdown}
-                    />
+                    >
+                        {currentUser.info.avatar ? 
+                            <img src={currentUser.info.avatar} />
+                            :
+                            <i className="far fa-user-circle"></i>
+                        }
+                    </div>
 
                     { toggleDropdownMenu ? 
                         <PopoverDropdownMenu /> 
