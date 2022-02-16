@@ -1,8 +1,9 @@
-# PROJECT: JS Final Project - The Gram
+## PROJECT: JS Final Project - The Gram
 my take on building an Instagram clone app.
 
+
 ## Techniques involved
-1. React as Frontend framework (with Create React App)
+1. React as Frontend framework (with create react app)
 2. React Router for client-side routing
 3. Firebase as Backend
 - Authentication
@@ -20,14 +21,19 @@ my take on building an Instagram clone app.
         - post caption 
         - comments
         - likes
+- Cloud Storage
+    1. storing user's profile pics
+    2. storing post's photos
 
 
 ## Libraries used
 date-fns
 - for manipulating dates
 
+
 ## Moving on 
-- [] Anonymous Authentication (to allow looking around without having to sign in with authentic account)
-- [] Admin with higher previledge (moderation)
-- [] Delete account
-- [] 
+- [ ] Anonymous Authentication (to allow looking around without having to sign in with authentic account)
+- [ ] Admin with higher previledge (moderation)
+- [ ] Delete account by user
+- [ ] Follower and Following Popup
+- [ ] Liker Popup
